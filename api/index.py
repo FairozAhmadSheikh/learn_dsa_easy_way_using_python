@@ -46,3 +46,16 @@ def register():
         flash('Registered successfully', 'success')
         return redirect(url_for('dashboard'))
     return render_template('register.html') 
+
+@app.route('/login', methods=['GET','POST'])
+def login():
+    if request.method == 'POST':
+        data = request.form
+        user = users.find_one({'email': data['email']})
+        if user and check_password_hash(user['password'], data['password']):
+            session['user_id'] = str(user['_id'])
+            flash('Logged in', 'success')
+            return redirect(url_for('dashboard'))
+        flash('Invalid credentials', 'danger')
+        return redirect(url_for('login'))
+    return render_template('login.html')
