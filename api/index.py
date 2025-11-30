@@ -22,3 +22,8 @@ def current_user():
     if not uid:
         return None
     return users.find_one({"_id": ObjectId(uid)})
+
+# Routes
+@app.route("/")
+def index():
+    return render_template("index.html", user=current_user())
