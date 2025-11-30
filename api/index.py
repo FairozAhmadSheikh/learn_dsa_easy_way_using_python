@@ -65,3 +65,16 @@ def logout():
     session.clear()
     flash('Logged out', 'info')
     return redirect(url_for('index'))
+
+
+@app.route('/forgot', methods=['GET','POST'])
+def forgot():
+    if request.method == 'POST':
+        email = request.form['email']
+        user = users.find_one({'email': email})
+        if user:
+            # Production: send password-reset email with token
+            flash('Password reset link would be sent (configure SMTP)', 'info')
+        else:
+            flash('Email not found', 'warning')
+    return render_template('forgot.html')
