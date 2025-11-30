@@ -59,3 +59,9 @@ def login():
         flash('Invalid credentials', 'danger')
         return redirect(url_for('login'))
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out', 'info')
+    return redirect(url_for('index'))
