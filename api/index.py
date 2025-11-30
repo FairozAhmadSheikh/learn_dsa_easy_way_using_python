@@ -8,3 +8,10 @@ from datetime import datetime
 # App setup
 app = Flask(__name__, static_folder="../static", template_folder="../templates")
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+
+# Mongo setup
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/dsapp")
+client = MongoClient(MONGO_URI)
+db = client.get_default_database() if client else client.dsapp
+users = db.users
+topics = db.topics
