@@ -27,3 +27,22 @@ def current_user():
 @app.route("/")
 def index():
     return render_template("index.html", user=current_user())
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        data = request.form
+        if users.find_one({"email": data['email']}):
+            flash('Email already registered', 'danger')
+            return redirect(url_for('register'))
+        hashed = generate_password_hash(data['password'])
+        uid = users.insert_one({
+            'name': data.get('name',''),
+            'email': data['email'],
+            'password': hashed,
+            'created_at': datetime.utcnow()
+            }).inserted_id
+        session['user_id'] = str(uid)
+        flash('Registered successfully', 'success')
+        return redirect(url_for('dashboard'))
+    return render_template('register.html') 
