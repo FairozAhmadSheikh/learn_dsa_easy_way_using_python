@@ -15,3 +15,10 @@ client = MongoClient(MONGO_URI)
 db = client.get_default_database() if client else client.dsapp
 users = db.users
 topics = db.topics
+
+# Helper
+def current_user():
+    uid = session.get("user_id")
+    if not uid:
+        return None
+    return users.find_one({"_id": ObjectId(uid)})
