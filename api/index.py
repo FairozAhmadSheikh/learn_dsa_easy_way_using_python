@@ -61,6 +61,40 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("SMTP_EMAIL")
 
 mail = Mail(app)
 
+@app.route("/admin/upload-image", methods=["GET", "POST"])
+def admin_upload_image():
+    if "user" not in session or not session.get("is_admin"):
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        if "image" not in request.files:
+            flash("No file selected", "danger")
+            return redirect(request.url)
+
+        file = request.files["image"]
+
+        if file.filename == "":
+            flash("No selected file", "danger")
+            return redirect(request.url)
+
+        # Upload to Cloudinary
+        upload_result = cloudinary.uploader.upload(file)
+
+        image_url = upload_result["secure_url"]
+
+        # Save to DB (for example, to images collection)
+        images.insert_one({
+            "url": image_url,
+            "uploaded_by": session["user"],
+            "uploaded_at": datetime.utcnow()
+        })
+
+        flash("Image uploaded successfully!", "success")
+        return redirect(url_for("admin_upload_image"))
+
+    return render_template("admin_upload_image.html")
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
