@@ -95,6 +95,8 @@ def admin_upload_image():
     return render_template("admin_upload_image.html")
 
 
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -255,29 +257,13 @@ def topic_detail(tid):
     return render_template('topic_detail.html', topic=t)
 
 # Admin (simple password-protected admin)
-@app.route('/admin', methods=['GET','POST'])
-def admin_panel():
-    admin_pw = os.environ.get('ADMIN_PASSWORD')
-    if request.method == 'POST':
-        pw = request.form.get('admin_pw')
-        if pw != admin_pw:
-            flash('Wrong admin password', 'danger')
-            return redirect(url_for('admin_panel'))
-        # create topic
-        title = request.form.get('title')
-        category = request.form.get('category')
-        content = request.form.get('content')
-        topics.insert_one({
-                'title': title,
-                'category': category,
-                'content': content,
-                'created_at': datetime.utcnow()
-                })
-        flash('Topic added', 'success')
-        return redirect(url_for('admin_panel'))
-    # GET: show admin page
-    all_topics = list(topics.find().sort('created_at', -1))
-    return render_template('admin.html', topics=all_topics)
+@app.route("/admin")
+def admin():
+    if "user" not in session or not session.get("is_admin"):
+        return redirect(url_for("login"))
+
+    img_list = list(images.find().sort("uploaded_at", -1))
+    return render_template("admin.html", images=img_list)
 
 # API helper to list categories (example)
 @app.route('/api/categories')
