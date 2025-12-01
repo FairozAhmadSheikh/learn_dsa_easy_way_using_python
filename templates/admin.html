@@ -1,0 +1,40 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <h2>Admin Panel</h2>
+
+  <form method="post" class="form">
+    <input
+      class="input"
+      type="password"
+      name="admin_pw"
+      placeholder="Admin Password"
+      required
+    />
+    <input class="input" name="title" placeholder="Topic Title" required />
+    <input
+      class="input"
+      name="category"
+      placeholder="Category (e.g. Trees, Graphs)"
+      required
+    />
+    <textarea
+      class="input"
+      name="content"
+      rows="6"
+      placeholder="Topic Content"
+    ></textarea>
+    <button class="button">Add Topic</button>
+  </form>
+
+  <h3 style="margin-top: 20px">All Topics</h3>
+  <div class="grid">
+    {% for t in topics %}
+    <div class="card topic-card">
+      <div class="topic-title">{{ t.title }}</div>
+      <div class="topic-desc">{{ t.category }}</div>
+      <a href="/topic/{{t._id}}">View →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
