@@ -1,0 +1,23 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <h2>Hello {{ user.name }}</h2>
+
+  <h3 style="margin-top: 20px">Categories</h3>
+  <ul>
+    {% for c in categories %}
+    <li><a href="/topics/{{c}}">{{c}}</a></li>
+    {% endfor %}
+  </ul>
+
+  <h3 style="margin-top: 20px">Latest Topics</h3>
+  <div class="grid">
+    {% for t in latest %}
+    <div class="card topic-card">
+      <div class="topic-title">{{ t.title }}</div>
+      <div class="topic-desc">{{ t.category }}</div>
+      <a href="/topic/{{t._id}}">Read →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
