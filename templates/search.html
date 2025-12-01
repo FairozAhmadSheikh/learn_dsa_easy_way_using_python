@@ -1,0 +1,26 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <h2>Search Topics</h2>
+
+  <form method="get" class="form">
+    <input class="input" name="q" placeholder="Search..." value="{{query}}" />
+    <button class="button">Search</button>
+  </form>
+
+  {% if results %}
+  <h3 style="margin-top: 20px">Results</h3>
+  <div class="grid">
+    {% for r in results %}
+    <div class="card topic-card">
+      <div class="topic-title">{{ r.title }}</div>
+      <div class="topic-desc">{{ r.category }}</div>
+      <a href="/topic/{{r._id}}">Read →</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif query %}
+  <p>No results found for "{{ query }}".</p>
+  {% endif %}
+</div>
+{% endblock %}
