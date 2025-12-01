@@ -95,3 +95,16 @@ def search():
     if q:
         results = list(topics.find({"$text": {"$search": q}}))
     return render_template('search.html', query=q, results=results)
+
+@app.route('/topics/<category>')
+def topics_by_category(category):
+    items = list(topics.find({'category': category}))
+    return render_template('index.html', category=category, topics=items)
+
+@app.route('/topic/<tid>')
+def topic_detail(tid):
+    t = topics.find_one({'_id': ObjectId(tid)})
+    if not t:
+        flash('Topic not found', 'warning')
+        return redirect(url_for('dashboard'))
+    return render_template('topic_detail.html', topic=t)
