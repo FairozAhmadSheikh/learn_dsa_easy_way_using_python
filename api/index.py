@@ -5,11 +5,22 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
 from flask_mail import Mail, Message
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 
 # App setup
 app = Flask(__name__, static_folder="../static", template_folder="../templates")
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
 
+
+# cloudinary config
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 # Mongo setup
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/dsapp")
 client = MongoClient(MONGO_URI)
