@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime
+from flask_mail import Mail, Message
 
 # App setup
 app = Flask(__name__, static_folder="../static", template_folder="../templates")
@@ -27,6 +28,27 @@ def current_user():
 @app.route("/")
 def index():
     return render_template("index.html", user=current_user())
+
+def send_email(to, subject, html):
+    try:
+        msg = Message(subject, recipients=[to])
+        msg.html = html
+        mail.send(msg)
+        print("Email sent!")
+        return True
+    except Exception as e:
+        print("SMTP Error:", e)
+        return False
+
+# SMTP CONFIG 
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'          # Gmail SMTP
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get("SMTP_EMAIL")     # your email
+app.config['MAIL_PASSWORD'] = os.environ.get("SMTP_PASSWORD")  # app password
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get("SMTP_EMAIL")
+
+mail = Mail(app)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -67,17 +89,55 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/forgot', methods=['GET','POST'])
+@app.route("/forgot", methods=["POST", "GET"])
 def forgot():
-    if request.method == 'POST':
-        email = request.form['email']
-        user = users.find_one({'email': email})
-        if user:
-            # Production: send password-reset email with token
-            flash('Password reset link would be sent (configure SMTP)', 'info')
-        else:
-            flash('Email not found', 'warning')
-    return render_template('forgot.html')
+    if request.method == "POST":
+        email = request.form["email"]
+        user = users.find_one({"email": email})
+
+        if not user:
+            flash("No user found with that email", "danger")
+            return redirect(url_for("forgot"))
+
+        reset_token = str(ObjectId())
+        users.update_one({"_id": user["_id"]}, {"$set": {"reset_token": reset_token}})
+
+        reset_link = url_for("reset_password", token=reset_token, _external=True)
+
+        send_email(
+            email,
+            "Password Reset - Flask DSA App",
+            f"""
+                <h3>Password Reset Link</h3>
+                <p>Click below to reset your password:</p>
+                <a href="{reset_link}">{reset_link}</a>
+            """
+        )
+
+        flash("Reset link has been sent to your email", "success")
+        return redirect(url_for("login"))
+
+    return render_template("forgot.html")
+
+@app.route("/reset/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    user = users.find_one({"reset_token": token})
+    if not user:
+        return "Invalid or expired token", 400
+
+    if request.method == "POST":
+        new_password = generate_password_hash(request.form["password"])
+
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"password": new_password}, "$unset": {"reset_token": ""}}
+        )
+
+        flash("Password updated successfully!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("reset.html")
+
 
 @app.route('/dashboard')
 def dashboard():
