@@ -87,3 +87,11 @@ def dashboard():
     cats = topics.distinct('category')
     latest = list(topics.find().sort('created_at', -1).limit(8))
     return render_template('dashboard.html', user=user, categories=cats, latest=latest)
+
+@app.route('/search')
+def search():
+    q = request.args.get('q','').strip()
+    results = []
+    if q:
+        results = list(topics.find({"$text": {"$search": q}}))
+    return render_template('search.html', query=q, results=results)
