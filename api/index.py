@@ -119,24 +119,43 @@ def forgot():
 
     return render_template("forgot.html")
 
-@app.route("/reset/<token>", methods=["GET", "POST"])
-def reset_password(token):
-    user = users.find_one({"reset_token": token})
-    if not user:
-        return "Invalid or expired token", 400
+@app.route("/reset-password", methods=["GET", "POST"])
+def reset_password():
+    email = session.get("otp_email")
+    if not email:
+        return redirect(url_for("forgot"))
 
     if request.method == "POST":
-        new_password = generate_password_hash(request.form["password"])
-
+        password = generate_password_hash(request.form["password"])
         users.update_one(
-            {"_id": user["_id"]},
-            {"$set": {"password": new_password}, "$unset": {"reset_token": ""}}
+            {"email": email},
+            {"$set": {"password": password}, "$unset": {"reset_otp": "", "otp_created": ""}}
         )
 
-        flash("Password updated successfully!", "success")
+        session.pop("otp_email", None)
+        flash("Password updated!", "success")
         return redirect(url_for("login"))
 
-    return render_template("reset.html")
+    return render_template("reset_password.html")
+
+
+@app.route("/verify-otp", methods=["GET", "POST"])
+def verify_otp():
+    email = session.get("otp_email")
+    if not email:
+        return redirect(url_for("forgot"))
+
+    user = users.find_one({"email": email})
+
+    if request.method == "POST":
+        entered = request.form["otp"]
+
+        if entered == user.get("reset_otp"):
+            return redirect(url_for("reset_password"))
+
+        flash("Invalid OTP", "danger")
+
+    return render_template("verify_otp.html")
 
 
 @app.route('/dashboard')
