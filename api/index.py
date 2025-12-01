@@ -133,3 +133,9 @@ def admin_panel():
     # GET: show admin page
     all_topics = list(topics.find().sort('created_at', -1))
     return render_template('admin.html', topics=all_topics)
+
+# API helper to list categories (example)
+@app.route('/api/categories')
+def api_categories():
+    cats = topics.distinct('category')
+    return jsonify(cats)
