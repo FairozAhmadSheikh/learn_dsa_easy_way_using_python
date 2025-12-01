@@ -102,7 +102,8 @@ def forgot():
         reset_token = str(ObjectId())
         users.update_one({"_id": user["_id"]}, {"$set": {"reset_token": reset_token}})
 
-        reset_link = url_for("reset_password", token=reset_token, _external=True)
+        reset_link = url_for("reset_password_token", token=reset_token, _external=True)
+
 
         send_email(
             email,
@@ -119,8 +120,9 @@ def forgot():
 
     return render_template("forgot.html")
 
+# OTP Reset Route
 @app.route("/reset-password", methods=["GET", "POST"])
-def reset_password():
+def reset_password_otp():
     email = session.get("otp_email")
     if not email:
         return redirect(url_for("forgot"))
@@ -137,6 +139,25 @@ def reset_password():
         return redirect(url_for("login"))
 
     return render_template("reset_password.html")
+# Token-based Reset Route
+@app.route("/reset/<token>", methods=["GET", "POST"])
+def reset_password_token(token):
+    user = users.find_one({"reset_token": token})
+    if not user:
+        flash("Invalid or expired reset link", "danger")
+        return redirect(url_for("forgot"))
+
+    if request.method == "POST":
+        new_pass = generate_password_hash(request.form["password"])
+        users.update_one(
+            {"_id": user["_id"]},
+            {"$set": {"password": new_pass}, "$unset": {"reset_token": ""}}
+        )
+        flash("Password changed successfully!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("reset_password.html", token=token)
+
 
 
 @app.route("/verify-otp", methods=["GET", "POST"])
