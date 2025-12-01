@@ -78,3 +78,12 @@ def forgot():
         else:
             flash('Email not found', 'warning')
     return render_template('forgot.html')
+
+@app.route('/dashboard')
+def dashboard():
+    user = current_user()
+    if not user:
+        return redirect(url_for('login'))
+    cats = topics.distinct('category')
+    latest = list(topics.find().sort('created_at', -1).limit(8))
+    return render_template('dashboard.html', user=user, categories=cats, latest=latest)
