@@ -1,0 +1,8 @@
+{% extends 'base.html' %} {% block content %}
+<div class="card">
+  <h2>{{ topic.title }}</h2>
+  <p><strong>Category:</strong> {{ topic.category }}</p>
+
+  <div style="margin-top: 20px; white-space: pre-wrap">{{ topic.content }}</div>
+</div>
+{% endblock %}
