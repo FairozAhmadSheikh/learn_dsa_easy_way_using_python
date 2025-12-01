@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DSA Portal</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <nav class="nav">
+      <a href="/">Home</a>
+      {% if user %}
+      <a href="/dashboard">Dashboard</a>
+      <a href="/logout">Logout</a>
+      {% else %}
+      <a href="/login">Login</a>
+      <a href="/register">Register</a>
+      {% endif %}
+      <a href="/admin">Admin</a>
+    </nav>
+    <main class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="flash-wrap">
+        {% for cat, msg in messages %}
+        <div class="flash {{cat}}">{{msg}}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
+    </main>
+    <script src="/static/js/main.js"></script>
+  </body>
+</html>
